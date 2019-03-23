@@ -1,0 +1,4 @@
+language: ruby
+
+install: gem install mdl
+script: mdl --git-recurse --style style.rb .
