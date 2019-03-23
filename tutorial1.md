@@ -1,6 +1,6 @@
-## Tutorial 1
+# Tutorial 1
 
-### Add the apt repo
+## Add the apt repo
 
 ```shell
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
@@ -8,31 +8,33 @@ cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
 deb https://apt.kubernetes.io/ kubernetes-xenial main
 EOF
 ```
+
 _NOTE: This is `xenial` regardless of the version of Ubuntu you are using. I am testing this on Ubuntu Bionic (18.04.2)._
 
-### Install kubedam
-```console
-$ sudo apt update
-$ sudo apt install kubelet
+## Install kubedam
+
+```shell
+sudo apt update
+sudo apt install kubelet
 ```
 
-### Check kubeadm status
+## Check kubeadm status
 
-```console
-$ sudo systemctl status kubelet
+```shell
+sudo systemctl status kubelet
 ```
 
-You'll notice that it's crash-looping. 
+You'll notice that it's crash-looping.
 That's because it's looking for configuration files that don't exist.
 
 ```console
 $ sudo journalctl --lines 5 --unit kubelet
 Mar 23 01:33:17 k8s-tutorial kubelet[9484]: F0323 01:33:17.000166    9484 server.go:189] failed to load Kubelet config file /var/lib/kubelet/config.yaml, error failed to read kubelet config file "/var/lib/kubelet/config.yaml", error: open /var/lib/kubelet/config.yaml: no such file or directory
-M
 ```
+
 Let's tell it not to do that. Take a look at the command line from systemctl status:
 
-```
+```console
 Process: 4857 ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_CONFIG_ARGS $KUBELET_KUBEADM_ARGS $KUBELET_EXTRA_ARGS (code=exited, status=255)
 ```
 
@@ -40,8 +42,7 @@ _NOTE: The number after Process is a PID and will be different for every user._
 
 Where do those arguements come from? Right above, there's this line:
 
-
-```  
+```console
 Drop-In: /etc/systemd/system/kubelet.service.d
          └─10-kubeadm.conf
 ```
@@ -73,21 +74,21 @@ Mar 23 01:38:34 k8s-tutorial systemd[1]: Started kubelet: The Kubernetes Node Ag
 Mar 23 01:38:34 k8s-tutorial kubelet[10468]: F0323 01:38:34.760309   10468 server.go:189] failed to load Kubelet config file /var/lib/kubelet/config.yaml, error kubelet config file "/var/lib/kubelet/config.yaml" was empty
 Mar 23 01:38:34 k8s-tutorial systemd[1]: kubelet.service: Main process exited, code=exited, status=255/n/a
 Mar 23 01:38:34 k8s-tutorial systemd[1]: kubelet.service: Failed with result 'exit-code'.
-k8s@k8s-tutorial:~$ 
+k8s@k8s-tutorial:~$
 ```
 
-That wasn't good enough. 
-Time to learn how to write a kubernetes config file. 
+That wasn't good enough.
+Time to learn how to write a kubernetes config file.
 
-###  Your first config file
+## Your first config file
 
-All of kubernetes uses a pretty standard configuration file format. 
+All of kubernetes uses a pretty standard configuration file format.
 Everything is written in YAML, and there are a few fields that are common.
 
-Behind the scenes, these are implemented by the [`TypeMeta`][typemeta] struct. 
-We can see there's two fields, `APIVersion` and `Kind`. 
+Behind the scenes, these are implemented by the [`TypeMeta`][typemeta] struct.
+We can see there's two fields, `APIVersion` and `Kind`.
 
-What goes there? We've got a [helpful reference file][kubeletcfg]. 
+What goes there? We've got a [helpful reference file][kubeletcfg].
 
 [typemeta]: https://godoc.org/k8s.io/apimachinery/pkg/apis/meta/v1#TypeMeta
 [kubeletcfg]: https://kubernetes.io/docs/tasks/administer-cluster/kubelet-config-file/
@@ -97,14 +98,14 @@ kind: KubeletConfiguration
 apiVersion: kubelet.config.k8s.io/v1beta1
 ```
 
-Most API versions in Kubernetes look like that: a string that looks like a domain name (known as a *Group*), and a Version. 
+Most API versions in Kubernetes look like that: a string that looks like a domain name (known as a *Group*), and a Version.
 The only exception is the `core` group, which includes things like pods.
 It's written `v1`, no domain or slah required.
 
 Let's write this to our file and see what happens.
 
-```console
-$ sudoedit /var/lib/kubelet/config.yaml
+```shell
+sudoedit /var/lib/kubelet/config.yaml
 ```
 
 Then check the logs:
@@ -120,26 +121,24 @@ Mar 23 01:47:27 k8s-tutorial systemd[1]: kubelet.service: Failed with result 'ex
 ```
 
 Great, a new error message! let's tackle this one.
-Looking at the [kubelet docs][kubelet], we can see that `--bootstrap-kubeconfig` is used for a kubeconfig we'll use to retrieve our real kubeconfig. 
+Looking at the [kubelet docs][kubelet], we can see that `--bootstrap-kubeconfig` is used for a kubeconfig we'll use to retrieve our real kubeconfig.
 Since we don't have a kubelet yet, we can just comment this out.
 
 [kubelet]: https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet/
 
-```console
-$ sudoedit /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+```shell
+sudoedit /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 ```
 
 Comment out the line that starts with `Environment="KUBELET_KUBECONFIG_ARGS=`:
 
 ```shell
-# Environment="KUBELET_KUBECONFIG_ARGS=
+Environment="KUBELET_KUBECONFIG_ARGS=
 ```
 
+## Disable authentication
 
-### Disable authentication
-
-We've got a new error to deal with: 
-
+We've got a new error to deal with:
 
 ```console
 $ sudo journalctl --lines 5 --unit kubelet
@@ -151,7 +150,7 @@ Mar 23 02:22:39 k8s-tutorial systemd[1]: kubelet.service: Main process exited, c
 Mar 23 02:22:39 k8s-tutorial systemd[1]: kubelet.service: Failed with result 'exit-code'.
 ```
 
-We don't need authentication! Let's turn it off. 
+We don't need authentication! Let's turn it off.
 Peeking through the [kubelet configuration][kubeletdoc], we can see that there's an object that [controls authentication][kubeletauth]. This is the default:
 
 [kubeletdoc]: https://godoc.org/k8s.io/kubelet/config/v1beta1#KubeletConfiguration
@@ -179,8 +178,8 @@ authorization:
   mode: AlwaysAllow
 ```
 
-authentication and authorization are different. 
-authentication answers "who are you," and authorization answers "are you allowed." 
+authentication and authorization are different.
+authentication answers "who are you," and authorization answers "are you allowed."
 To get the server to work in standalone mode, we have to give answers to both those questions.
 
 If all's gone well, you should see some log lines that look like this:
@@ -194,9 +193,9 @@ Mar 23 02:42:27 k8s-tutorial kubelet[24818]: I0323 02:42:27.388418   24818 kubel
 
 Success! But the obvious question is: what can we _do_ with our lonely kubelet?
 
-### Running Static pods
+## Running Static pods
 
-We're going to need a payload. 
+We're going to need a payload.
 This can be anything we want, but let's try [simpleservice][simpleservice].
 
 First, we need to modify our kubelet manifest to run static pods:
@@ -237,7 +236,7 @@ spec:
     image: mhausenblas/simpleservice:0.5.0
     ports:
     - containerPort: 8080
-    env: 
+    env:
     - name: PORT0
       value: "8080"
 ```
@@ -245,7 +244,7 @@ spec:
 Kubelet will look for that file and start the pod. You can see this in the output from docker:
 
 ```console
-$ sudo docker ps 
+$ sudo docker ps
 CONTAINER ID        IMAGE                       COMMAND                  CREATED             STATUS              PORTS               NAMES
 f96c7c333214        mhausenblas/simpleservice   "python ./simpleserv…"   7 minutes ago       Up 7 minutes                            k8s_myapp-container_myapp-pod-k8s-tutorial_default_7a32a55f16cc86f3976f4b8e2ee88408_0
 586a9baa3e2e        k8s.gcr.io/pause:3.1        "/pause"                 7 minutes ago       Up 7 minutes                            k8s_POD_myapp-pod-k8s-tutorial_default_7a32a55f16cc86f3976f4b8e2ee88408_0
@@ -270,7 +269,7 @@ next, retrieve the IP address:
     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
     inet 127.0.0.1/8 scope host lo
        valid_lft forever preferred_lft forever
-7: eth0@if8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default 
+7: eth0@if8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default
     link/ether 02:42:ac:11:00:02 brd ff:ff:ff:ff:ff:ff
     inet 172.17.0.2/16 brd 172.17.255.255 scope global eth0
        valid_lft forever preferred_lft forever
@@ -282,7 +281,7 @@ Now, log out of that machine:
 
 ```console
 # exit
-$ 
+$
 ```
 
 And you should be able to curl our endpoint!
