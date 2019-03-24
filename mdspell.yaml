@@ -1,0 +1,11 @@
+ignored:
+- etcd
+- filesystem
+- hostPath
+- http
+- https
+- kubeadm
+- kubernetes
+- podspec
+- srecon
+- yaml

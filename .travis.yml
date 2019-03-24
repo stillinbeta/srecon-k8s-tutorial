@@ -1,4 +1,12 @@
 language: ruby
 
-install: gem install mdl
-script: mdl --git-recurse --style style.rb .
+addons:
+  apt:
+    packages:
+    - aspell
+    - aspell-en
+
+install: gem install mdl mdspell
+script:
+  - mdl --git-recurse --style style.rb .
+  - mdspell -c mdspell.yaml .
