@@ -69,6 +69,7 @@ We could just use the static pod manifest that kubeadm provides.
 If you run `sudo kubeadm init phase etcd local`, you'll get a manifest generated.
 
 But to learn how etcd works, we should make our own.
+This will go where our previous pod did, in `/etc/kubernetes/manifests`.
 
 ```yaml
 apiVersion: v1
@@ -235,94 +236,96 @@ spec:
 We're going to need a bunch of arguments. let's make a list.
 
 ```yaml
-command:
-  - etcd
+    command:
+    - etcd
 ```
 
 Let's give our cluster a name:
 
 ```yaml
-command:
-  - etcd
-  - --name=k8s-demo
+    command:
+    - etcd
+    - --name=k8s-demo
 ```
 
 We'll need to install all our certificates too.
 So we'll add the CA:
 
 ```yaml
-command:
-  - etcd
-  - --name=k8s-demo
-  - --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+    command:
+    - etcd
+    - --name=k8s-demo
+    - --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
 ```
 
 And our server certificates:
 
 ```yaml
-command:
-  - etcd
-  - --name=k8s-demo
-  - --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
-  - --key-file=/etc/kubernetes/pki/etcd/server.key
-  - --cert-file=/etc/kubernetes/pki/etcd/server.crt
+    command:
+    - etcd
+    - --name=k8s-demo
+    - --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+    - --key-file=/etc/kubernetes/pki/etcd/server.key
+    - --cert-file=/etc/kubernetes/pki/etcd/server.crt
 ```
 
 Turn on authentication:
 
 ```yaml
-command:
-  - etcd
-  - --name=k8s-demo
-  - --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
-  - --key-file=/etc/kubernetes/pki/etcd/server.key
-  - --cert-file=/etc/kubernetes/pki/etcd/server.crt
-  - --client-cert-auth=true
+    command:
+    - etcd
+    - --name=k8s-demo
+    - --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+    - --key-file=/etc/kubernetes/pki/etcd/server.key
+    - --cert-file=/etc/kubernetes/pki/etcd/server.crt
+    - --client-cert-auth=true
 ```
 
 Serve on https, not http.
 
-```console
-command:
-  - etcd
-  - --name=k8s-demo
-  - --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
-  - --key-file=/etc/kubernetes/pki/etcd/server.key
-  - --cert-file=/etc/kubernetes/pki/etcd/server.crt
-  - --client-cert-auth=true
-  - --listen-client-urls=https://0.0.0.0:2379
-
+```yaml
+    command:
+    - etcd
+    - --name=k8s-demo
+    - --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+    - --key-file=/etc/kubernetes/pki/etcd/server.key
+    - --cert-file=/etc/kubernetes/pki/etcd/server.crt
+    - --client-cert-auth=true
+    - --listen-client-urls=https://0.0.0.0:2379
 ```
+
+We use port 2379 because that's [the official port allocated to etcd][2379], as well the default.
 
 When we specify `listen-client-urls`, we have to specify [`advertise-client-urls`][etcd-advertise] as well:
 
 [etcd-advertise]: https://coreos.com/etcd/docs/latest/v2/configuration.html#--advertise-client-urls
+[2379]: https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml?search=2379
 
 ```yaml
-command:
-  - etcd
-  - --name=k8s-demo
-  - --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
-  - --key-file=/etc/kubernetes/pki/etcd/server.key
-  - --cert-file=/etc/kubernetes/pki/etcd/server.crt
-  - --client-cert-auth=true
-  - --listen-client-urls=https://0.0.0.0:2379
-  - --advertise-client-urls=https://localhost:2379
+    command:
+    - etcd
+    - --name=k8s-demo
+    - --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+    - --key-file=/etc/kubernetes/pki/etcd/server.key
+    - --cert-file=/etc/kubernetes/pki/etcd/server.crt
+    - --client-cert-auth=true
+    - --listen-client-urls=https://0.0.0.0:2379
+    - --advertise-client-urls=https://localhost:2379
 ```
 
 We set up a data directory, so we may as well use it:
 
 ```yaml
-command:
-  - etcd
-  - --name=k8s-demo
-  - --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
-  - --key-file=/etc/kubernetes/pki/etcd/server.key
-  - --cert-file=/etc/kubernetes/pki/etcd/server.crt
-  - --client-cert-auth=true
-  - --listen-client-urls=https://0.0.0.0:2379
-  - --advertise-client-urls=https://localhost:2379
-  - --data-dir=/var/lib/etcd
+    command:
+    - etcd
+    - --name=k8s-demo
+    - --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+    - --key-file=/etc/kubernetes/pki/etcd/server.key
+    - --cert-file=/etc/kubernetes/pki/etcd/server.crt
+    - --client-cert-auth=true
+    - --listen-client-urls=https://0.0.0.0:2379
+    - --advertise-client-urls=https://localhost:2379
+    - --data-dir=/var/lib/etcd
 ```
 
 ## Putting it all together
@@ -398,8 +401,7 @@ $ sudo kubeadm init phase certs etcd-healthcheck-client
 Once again, we can make sure this is signed:
 
 ```console
-$ openssl verify -CAfile /etc/kubernetes/pki/etcd/ca.crt /etc/kubernetes/pki
-/etcd/healthcheck-client.crt
+$ openssl verify -CAfile /etc/kubernetes/pki/etcd/ca.crt /etc/kubernetes/pki/etcd/healthcheck-client.crt
 /etc/kubernetes/pki/etcd/healthcheck-client.crt: OK
 ```
 
