@@ -10,10 +10,14 @@ ignored:
 - kubeadm
 - kubeconfig
 - kubelet
+- kubelet
 - kubernetes
 - pid
 - podspec
+- preflight
 - srecon
 - struct
 - subnet
+- virtualbox
+- vm
 - yaml
