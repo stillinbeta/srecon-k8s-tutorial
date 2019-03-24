@@ -1,10 +1,12 @@
 ignored:
+- api
 - config
 - etcd
 - filesystem
 - hostPath
 - http
 - https
+- ip
 - kubeadm
 - kubeconfig
 - kubelet

@@ -4,12 +4,20 @@
 
 ```shell
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+sudo tee /etc/apt/sources.list.d/kubernetes.list <<EOF
 deb https://apt.kubernetes.io/ kubernetes-xenial main
 EOF
 ```
 
 _NOTE: This is `xenial` regardless of the version of Ubuntu you are using. I am testing this on Ubuntu Bionic (18.04.2)._
+
+## Install docker
+
+For historical reasons, the docker package is `docker.io`.
+
+```shell
+sudo apt install docker.io
+```
 
 ## Install kubelet and kubeadm
 
@@ -64,7 +72,7 @@ ExecStart=
 ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_CONFIG_ARGS $KUBELET_KUBEADM_ARGS $KUBELET_EXTRA_ARGS
 ```
 
-Bingo. Let's make an empty config file for it.
+Bingo. Let's make an empty config file for it (e.g. with `touch`).
 
 ```console
 $ sudo journalctl --lines 5 --unit kubelet
@@ -133,7 +141,13 @@ sudoedit /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 Comment out the line that starts with `Environment="KUBELET_KUBECONFIG_ARGS=`:
 
 ```shell
-Environment="KUBELET_KUBECONFIG_ARGS=
+# Environment="KUBELET_KUBECONFIG_ARGS=
+```
+
+Reload the `systemd` daemons, since you changed a configuration file:
+
+```shell
+sudo systemctl daemon-reload
 ```
 
 ## Disable authentication
@@ -157,14 +171,14 @@ Peeking through the [kubelet configuration][kubeletdoc], we can see that there's
 [kubeletauth]: https://godoc.org/k8s.io/kubelet/config/v1beta1#KubeletAuthentication
 
 ```yaml
-anonymous:
-  enabled: false
-webhook:
-  enabled: true
-  cacheTTL: "2m"
+  anonymous:
+    enabled: false
+  webhook:
+    enabled: true
+    cacheTTL: "2m"
 ```
 
-Let's override that:
+Let's override that in the `/var/lib/kubelet/config.yaml` we made earlier:
 
 ```yaml
 kind: KubeletConfiguration
@@ -191,6 +205,18 @@ Mar 23 02:42:17 k8s-tutorial kubelet[24818]: I0323 02:42:17.374717   24818 kubel
 Mar 23 02:42:27 k8s-tutorial kubelet[24818]: I0323 02:42:27.388418   24818 kubelet_node_status.go:278] Setting node annotation to enable volume controller attach/detach
 ```
 
+And a much healthier status:
+
+```console
+$ sudo systemctl status kubelet
+● kubelet.service - kubelet: The Kubernetes Node Agent
+   Loaded: loaded (/lib/systemd/system/kubelet.service; enabled; vendor preset: enabled)
+  Drop-In: /etc/systemd/system/kubelet.service.d
+           └─10-kubeadm.conf
+   Active: active (running) since Sun 2019-03-24 00:27:44 UTC; 1min ago
+<snip>
+```
+
 Success! But the obvious question is: what can we _do_ with our lonely kubelet?
 
 ## Running Static pods
@@ -210,7 +236,7 @@ authentication:
     enabled: true
 authorization:
   mode: AlwaysAllow
-staticPodPath: /etc/kubernetes/pods/
+staticPodPath: /etc/kubernetes/manifests/
 ```
 
 And restart the process:
@@ -241,6 +267,28 @@ spec:
       value: "8080"
 ```
 
+Write that out to a file in the `staticPodPath`:
+
+```console
+sudo tee /etc/kubernetes/manifests/simpleservice.yaml <<EOF
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp-pod
+  labels:
+    app: myapp
+spec:
+  containers:
+  - name: myapp-container
+    image: mhausenblas/simpleservice:0.5.0
+    ports:
+    - containerPort: 8080
+    env:
+    - name: PORT0
+      value: "8080"
+EOF
+```
+
 Kubelet will look for that file and start the pod. You can see this in the output from docker:
 
 ```console
@@ -250,17 +298,23 @@ f96c7c333214        mhausenblas/simpleservice   "python ./simpleserv…"   7 min
 586a9baa3e2e        k8s.gcr.io/pause:3.1        "/pause"                 7 minutes ago       Up 7 minutes                            k8s_POD_myapp-pod-k8s-tutorial_default_7a32a55f16cc86f3976f4b8e2ee88408_0
 ```
 
+The `pause` container [is always present in every pod][pause]. Your container may take a few seconds to download and spin up.
+
+[pause]: https://www.ianlewis.org/en/almighty-pause-container
+
 NOTE: Probably most of the hashes here will be different. But the important this is the `k8s_myapp-container_myapp-pod`, which means our pod is running!
 
 You'll notice the ports aren't exposed. Never fear, we can still access our service! First, get a shell running on the docker container:
 
 ```console
-$ sudo docker exec -it f96c7c333214 bash
+$ sudo docker exec -it <container id> bash
 #
 ```
 
-NOTE: the `#` means that this is a root shell. 
-Your prompt will be longer, probably something like `root@myapp-pod-k8s-tutorial:/usr/src/app#`. 
+where `<container id>` is in the `docker ps` output.
+
+NOTE: the `#` means that this is a root shell.
+Your prompt will be longer, probably something like `root@myapp-pod-k8s-tutorial:/usr/src/app#`.
 This has been omitted for brevity.
 
 next, retrieve the IP address:
@@ -299,3 +353,12 @@ Server: TornadoServer/4.3
 
 {"host": "172.17.0.2:8080", "version": "0.5.0", "result": "all is well"}
 ```
+
+## Conclusion
+
+You've got your very own kubelet running!
+The kubelet is the workhorse of kubernetes: most other components are ultimately working to schedule pods on nodes.
+In a real environment, the API and kubelet connect to each other to schedule pods on whatever node has free resources.
+But we've got a kubelet going it alone, and still providing a useful service.
+If you wanted to only have one or two pods, you could stop here and forego the rest of Kubernetes!
+But you would probably be missing out.
