@@ -1,11 +1,19 @@
 ignored:
+- api
+- config
 - etcd
 - filesystem
 - hostPath
 - http
 - https
+- ip
 - kubeadm
+- kubeconfig
+- kubelet
 - kubernetes
+- pid
 - podspec
 - srecon
+- struct
+- subnet
 - yaml
