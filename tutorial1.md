@@ -1,6 +1,6 @@
 # Tutorial 1
 
-## Add the apt repo
+## Add the apt repository
 
 ```shell
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
@@ -11,14 +11,14 @@ EOF
 
 _NOTE: This is `xenial` regardless of the version of Ubuntu you are using. I am testing this on Ubuntu Bionic (18.04.2)._
 
-## Install kubedam
+## Install kubelet and kubeadm
 
 ```shell
 sudo apt update
-sudo apt install kubelet
+sudo apt install kubelet kubeadm
 ```
 
-## Check kubeadm status
+## Check kubelet status
 
 ```shell
 sudo systemctl status kubelet
@@ -32,7 +32,7 @@ $ sudo journalctl --lines 5 --unit kubelet
 Mar 23 01:33:17 k8s-tutorial kubelet[9484]: F0323 01:33:17.000166    9484 server.go:189] failed to load Kubelet config file /var/lib/kubelet/config.yaml, error failed to read kubelet config file "/var/lib/kubelet/config.yaml", error: open /var/lib/kubelet/config.yaml: no such file or directory
 ```
 
-Let's tell it not to do that. Take a look at the command line from systemctl status:
+Let's tell it not to do that. Take a look at the command line from `systemctl status`:
 
 ```console
 Process: 4857 ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_CONFIG_ARGS $KUBELET_KUBEADM_ARGS $KUBELET_EXTRA_ARGS (code=exited, status=255)
@@ -40,7 +40,7 @@ Process: 4857 ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_CONFI
 
 _NOTE: The number after Process is a PID and will be different for every user._
 
-Where do those arguements come from? Right above, there's this line:
+Where do those arguments come from? Right above, there's this line:
 
 ```console
 Drop-In: /etc/systemd/system/kubelet.service.d
@@ -100,7 +100,7 @@ apiVersion: kubelet.config.k8s.io/v1beta1
 
 Most API versions in Kubernetes look like that: a string that looks like a domain name (known as a *Group*), and a Version.
 The only exception is the `core` group, which includes things like pods.
-It's written `v1`, no domain or slah required.
+It's written `v1`, no domain or slash required.
 
 Let's write this to our file and see what happens.
 
@@ -196,7 +196,7 @@ Success! But the obvious question is: what can we _do_ with our lonely kubelet?
 ## Running Static pods
 
 We're going to need a payload.
-This can be anything we want, but let's try [simpleservice][simpleservice].
+This can be anything we want, but let's try [`simpleservice`][simpleservice].
 
 First, we need to modify our kubelet manifest to run static pods:
 
@@ -259,7 +259,9 @@ $ sudo docker exec -it f96c7c333214 bash
 #
 ```
 
-NOTE: the `#` means that this is a root shell. Your prompt will be longer, probably somthing like `root@myapp-pod-k8s-tutorial:/usr/src/app#`. This has been omitted for brevity.
+NOTE: the `#` means that this is a root shell. 
+Your prompt will be longer, probably something like `root@myapp-pod-k8s-tutorial:/usr/src/app#`. 
+This has been omitted for brevity.
 
 next, retrieve the IP address:
 
