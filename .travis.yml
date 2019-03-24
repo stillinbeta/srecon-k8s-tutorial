@@ -6,7 +6,5 @@ addons:
     - aspell
     - aspell-en
 
-install: gem install mdl mdspell
-script:
-  - mdl --git-recurse --style style.rb .
-  - mdspell -c mdspell.yaml .
+install: make deps
+script: make
