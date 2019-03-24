@@ -4,6 +4,7 @@ ignored:
 - etcd
 - filesystem
 - hostPath
+- hostname
 - http
 - https
 - ip
@@ -12,12 +13,15 @@ ignored:
 - kubelet
 - kubelet
 - kubernetes
+- localhost
 - pid
 - podspec
 - preflight
+- rbac
 - srecon
 - struct
 - subnet
+- uncomment
 - virtualbox
 - vm
 - yaml
