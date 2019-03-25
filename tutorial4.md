@@ -65,7 +65,7 @@ $ openssl verify -CAfile /etc/kubernetes/pki/etcd/ca.crt /etc/kubernetes/pki/api
 
 Note that these credentials are issues by the `etcd` Certificate Authority, not APIServer's:
 
-````console
+```console
 $ openssl verify -CAfile /etc/kubernetes/pki/ca.crt /etc/kubernetes/pki/apis
 erver-etcd-client.crt
 O = system:masters, CN = kube-apiserver-etcd-client
