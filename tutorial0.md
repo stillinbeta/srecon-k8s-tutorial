@@ -6,6 +6,7 @@ A few isolated parts of this tutorial assume you are using Virtualbox.
 This is not required, however, that is what this tutorial was tested on.
 Using another hypervisor, cloud instances, or bare metal will quite possibly work, but may also fail in byzantine ways.
 When configuring VirtualBox or a cloud instance, set (or chose) a CPU count >= 2. This will save you headaches later.
+
 ### Some virtualbox Hints
 
 If you do choose to use virtualbox, you may find it helpful to have SSH access to your machine.
