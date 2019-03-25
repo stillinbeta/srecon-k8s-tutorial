@@ -12,3 +12,6 @@ Slides will also be posted once they're available.
 ## [Tutorial 3: `etcd`](tutorial3.md)
 
 ## [Tutorial 4: `apiserver`](tutorial4.md)
+
+## [Tutorial 5: `controller-manager`](tutorial5.md)
+

@@ -16,7 +16,9 @@ ignored:
 - kubeconfig
 - kubelet
 - kubernetes
+- lifecycle
 - localhost
+- namespace
 - pid
 - podspec
 - preflight
