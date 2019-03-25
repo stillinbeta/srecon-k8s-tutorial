@@ -15,3 +15,4 @@ Slides will also be posted once they're available.
 
 ## [Tutorial 5: `controller-manager`](tutorial5.md)
 
+## [Tutorial 6: `scheduler`](tutorial6.md)
