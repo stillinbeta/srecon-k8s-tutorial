@@ -8,3 +8,5 @@ Slides will also be posted once they're available.
 ## [Tutorial 2: `kubeadm` preflight](tutorial2.md)
 
 ## [Tutorial 3: `etcd`](tutorial3.md)
+
+## [Tutorial 4: `apiserver`](tutorial4.md)
