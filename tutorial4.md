@@ -52,6 +52,28 @@ $ openssl verify -CAfile /etc/kubernetes/pki/ca.crt  /etc//kubernetes/pki/apiser
 
 _NOTE: the IP addresses and names depend on your environment and hostname._
 
+### Service Accounts
+
+Service accounts are used by components of Kubernetes to access the API server.
+When Kubernetes needs to issue credentials to itself, those credentials are signed by the service account private key.
+
+Unlike most other credentials in Kubernetes, this is an RSA private key, rather than an a certificate/key pair:
+
+```console
+$ sudo kubeadm init phase certs sa
+[certs] Generating "sa" key and public key
+$ sudo cat /etc/kubernetes/pki/sa.pub
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2TgcvvegmZR/Nemvb+SJ
+Xwvm9euLH3FXp97GLe/BsaMCnhH097S/oZ6h50rHSdQUriwf16YZqAcjQun+7OMm
+/12Y9yx434PoVxutueWDjjCKggienyHq9GqrwTRE8U1z5JrOTrwggTZrP9ce1NOD
+uEV1qz/j+FEAFejyCNXGO5TPOlh8V3HALsExxoQ/0+lriarf1Jl8EB8pOPkoLtDc
+cuaZrjmzXFzoqJ1smjv3NJMjwFd13gzBYICc7fTAECXS1exGJq/7WknuHW84GBRX
+B3OWbn22S9jb6suhsKDXUgEa5REXER0zL0tup5BNHbJHVXmFdOJFJ6vvZLhu+0OQ
+6wIDAQAB
+-----END PUBLIC KEY-----
+```
+
 ### API Server etcd client
 
 API Server needs to talk to etcd as well, so we'll generate credentials that are valid with etcd.
@@ -261,6 +283,26 @@ To enable this, we need to pass in the CA to validate certificates against:
     - --client-ca-file=/etc/kubernetes/pki/ca.crt
 ```
 
+Also, [service accounts] will be signed by the service account public key:
+
+[service accounts]: https://kubernetes.io/docs/reference/access-authn-authz/service-accounts-admin/
+
+```yaml
+    command:
+    - kube-apiserver
+    - --client-ca-file=/etc/kubernetes/pki/ca.crt
+    - --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt
+    - --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt
+    - --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key
+    - --etcd-servers=https://127.0.0.1:2379
+    - --tls-cert-file=/etc/kubernetes/pki/apiserver.crt
+    - --tls-private-key-file=/etc/kubernetes/pki/apiserver.key
+    - --secure-port=6443
+    - --insecure-port=0
+    - --client-ca-file=/etc/kubernetes/pki/ca.crt
+    - --service-account-key-file=/etc/kubernetes/pki/sa.pub
+```
+
 #### Authorization
 
 [Authorization for Kubernetes][auth] can be a complicated thing to manage.
@@ -289,6 +331,7 @@ A thorough overview of RBAC in k8s could easily be its own tutorial: for now we 
     - --secure-port=6443
     - --insecure-port=0
     - --client-ca-file=/etc/kubernetes/pki/ca.crt
+    - --service-account-key-file=/etc/kubernetes/pki/sa.pub
     - --authorization-mode=Node,RBAC
 ```
 
@@ -321,6 +364,7 @@ spec:
     - --secure-port=6443
     - --insecure-port=0
     - --client-ca-file=/etc/kubernetes/pki/ca.crt
+    - --service-account-key-file=/etc/kubernetes/pki/sa.pub
     - --authorization-mode=Node,RBAC
     volumeMounts:
     - mountPath: /etc/kubernetes/pki
