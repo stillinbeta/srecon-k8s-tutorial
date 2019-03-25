@@ -1,13 +1,13 @@
 # Tutorial 6: scheduler
 
-The scheduler is responsible for allocating pods to nodes. 
+The scheduler is responsible for allocating pods to nodes.
 We only have one node right now, but the scheduler can scale to hundreds or thousands of nodes.
-It can handle arbitrary constraints (e.g. only schedule on GPU nodes, don't schedule in this region), quality of service, resource requirements, and many other things. 
+It can handle arbitrary constraints (e.g. only schedule on GPU nodes, don't schedule in this region), quality of service, resource requirements, and many other things.
 You can think of it as a special case of the controller-manager, but it's the basis on which most other kubernetes primitives (including most controllers) rely.
 
 ## Credentials
 
-Like the `controller-manager`, the scheduler gets all its information through the API server. 
+Like the `controller-manager`, the scheduler gets all its information through the API server.
 We'll need to give it credentials:
 
 ```console
@@ -137,7 +137,7 @@ kube-scheduler-k8s-tutorial            1/1     Running   0          47s
 
 Now that we've got a scheduler, we've got everything that we need to run a pod!
 
-Here's an example pod from [the kubernetes documention][k8spod].
+Here's an example pod from [the kubernetes documentation][k8spod].
 Save it as a file in your local directory, i.e. `example.yaml`.
 
 [k8spod]: https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/
@@ -156,10 +156,10 @@ spec:
     command: ['sh', '-c', 'echo Hello Kubernetes! && sleep 3600']
 ```
 
-Now, we can use kubectl to apply it to our cluster:
+Now, we can use `kubectl` to apply it to our cluster:
 
 ```console
-$ kubectl apply -f example.yaml 
+$ kubectl apply -f example.yaml
 pod/myapp-pod created
 ```
 
@@ -168,56 +168,26 @@ Let's see how it's doing:
 ```console
 $ kubectl get po
 NAME                     READY   STATUS    RESTARTS   AGE
-myapp-pod                0/1     Pending   0          4m48s
-myapp-pod-k8s-tutorial   1/1     Running   1          5h59m
+myapp-pod                1/1     Running   0          12h
+myapp-pod-k8s-tutorial   1/1     Running   1          18h
 ```
 
-Hmm, that doesn't seem good. Let's see what's happening.
+Looks like it's working!
+
+We can check the logs:
 
 ```console
-$ kubectl describe pod/myapp-pod
-Name:               myapp-pod
-Namespace:          default
-Priority:           0
-PriorityClassName:  <none>
-Node:               <none>
-Labels:             app=myapp
-Annotations:        kubectl.kubernetes.io/last-applied-configuration:
-                      {"apiVersion":"v1","kind":"Pod","metadata":{"annotations":{},"labels":{"
-app":"myapp"},"name":"myapp-pod","namespace":"default"},"spec":{"c...                        
-Status:             Pending
-IP:                 
-Containers:
-  myapp-container:
-    Image:      busybox
-    Port:       <none>
-    Host Port:  <none>
-    Command:
-      sh
-      -c
-      echo Hello Kubernetes! && sleep 3600
-    Environment:  <none>
-    Mounts:       <none>
-Conditions:
-  Type           Status
-  PodScheduled   False 
-Volumes:         <none>
-QoS Class:       BestEffort
-Node-Selectors:  <none>
-Tolerations:     node.kubernetes.io/not-ready:NoExecute for 300s
-                 node.kubernetes.io/unreachable:NoExecute for 300s
-Events:
-  Type     Reason            Age                   From               Message
-  ----     ------            ----                  ----               -------
-  Warning  FailedScheduling  15s (x12 over 5m39s)  default-scheduler  0/1 nodes are available:
- 1 node(s) had taints that the pod didn't tolerate.
+$ kubectl logs myapp-pod
+Hello Kubernetes!
 ```
 
-What's this about taints? Let's take a look at our nodes.
+## Conclusion
 
-```console
-$ kubectl describe node | grep -i taint
-Taints:             node.kubernetes.io/not-ready:NoSchedule
-```
+At this point we have a (minimally) viable kubernetes cluster!
+We can connect to the API, start and stop pods, and view logs.
 
-#TODO: fix
+For a real production cluster, there are a number of additional steps.
+We don't have DNS, or networking, and we have a number of components that won't scale past a single instance.
+
+But I hope at this point you're empowered to see Kubernetes as more than a black box that commands go into and pods come out of.
+And hopefully next time something goes wrong, you'll know where to start.

@@ -235,6 +235,46 @@ We'll use the same credentials that we use to validate the API server with:
     - --cluster-signing-key-file=/etc/kubernetes/pki/ca.key
 ```
 
+### Service Accounts
+
+The controller manager is in charge of issuing [service accounts] to all services that request them.
+Because these are signed by the service account secret key, we'll need to provide that:
+
+```yaml
+    command:
+    - kube-controller-manager
+    - --authentication-kubeconfig=/etc/kubernetes/controller-manager.conf
+    - --authorization-kubeconfig=/etc/kubernetes/controller-manager.conf
+    - --kubeconfig=/etc/kubernetes/controller-manager.conf
+    - --client-ca-file=/etc/kubernetes/pki/ca.crt
+    - --cluster-signing-cert-file=/etc/kubernetes/pki/ca.crt
+    - --cluster-signing-key-file=/etc/kubernetes/pki/ca.key
+    - --service-account-private-key-file=/etc/kubernetes/pki/sa.key
+```
+
+By default, the controller manager will use the credentials we've issued to it.
+However, these credentials are intentionally very limited, because it is better
+to have controller manager use its own service accounts.
+This makes it obvious which individual components are carrying out each action,
+rather than just one credential for the entire controller manager.
+
+This needs to be explicitly enabled:
+
+[service accounts]: https://kubernetes.io/docs/reference/access-authn-authz/service-accounts-admin/
+
+```yaml
+    command:
+    - kube-controller-manager
+    - --authentication-kubeconfig=/etc/kubernetes/controller-manager.conf
+    - --authorization-kubeconfig=/etc/kubernetes/controller-manager.conf
+    - --kubeconfig=/etc/kubernetes/controller-manager.conf
+    - --client-ca-file=/etc/kubernetes/pki/ca.crt
+    - --cluster-signing-cert-file=/etc/kubernetes/pki/ca.crt
+    - --cluster-signing-key-file=/etc/kubernetes/pki/ca.key
+    - --service-account-private-key-file=/etc/kubernetes/pki/sa.key
+    - --use-service-account-credentials=true
+```
+
 ### Controllers
 
 The `--controllers` flag specifies which of the many controllers to actually enable.
@@ -256,6 +296,8 @@ Instead, we will enable the bare minimum needed to get the cluster running.
 * `podgc` cleans up unneeded pods.
 * `replicaset` is responsible for synchronizing [`ReplicaSet`][replicasets] objects stored in the system with actual running pods.
 * `tokencleaner` deletes expired [tokens].
+* `serviceaccount` ensures a [default `ServiceAccount` exists for every namespace][sacontrol]
+* `serviceaccount-token` [issues secrets for `ServiceAccount` objects][satoken]
 
 [certapi]: https://kubernetes.io/docs/tasks/tls/managing-tls-in-a-cluster/#create-a-certificate-signing-request-object-to-send-to-the-kubernetes-api
 [daemonset]: https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/
@@ -268,6 +310,8 @@ Instead, we will enable the bare minimum needed to get the cluster running.
 [node]: https://kubernetes.io/docs/concepts/architecture/nodes/
 [replicasets]: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 [tokens]: https://kubernetes.io/docs/reference/access-authn-authz/bootstrap-tokens/
+[sacontrol]: https://kubernetes.io/docs/reference/access-authn-authz/service-accounts-admin/#service-account-controller
+[satoken]: https://kubernetes.io/docs/reference/access-authn-authz/service-accounts-admin/#token-controller
 
 ```yaml
     command:
@@ -276,7 +320,9 @@ Instead, we will enable the bare minimum needed to get the cluster running.
     - --authorization-kubeconfig=/etc/kubernetes/controller-manager.conf
     - --kubeconfig=/etc/kubernetes/controller-manager.conf
     - --client-ca-file=/etc/kubernetes/pki/ca.crt
-    - --controllers=bootstrapsigner,csrapproving,csrsigning,daemonset,deployment,disruption,endpoints,job,namesapec,nodeipam,nodelifecycle,podgc,replicaset,tokencleaner
+    - --service-account-private-key-file=/etc/kubernetes/pki/sa.key
+    - --use-service-account-credentials=true
+    - --controllers=bootstrapsigner,csrapproving,csrsigning,daemonset,deployment,disruption,endpoint,job,namespace,nodeipam,nodelifecycle,podgc,replicaset,tokencleaner,serviceaccount,serviceaccount-token
 ```
 
 ## Installing the Pod
@@ -301,7 +347,9 @@ spec:
     - --authorization-kubeconfig=/etc/kubernetes/controller-manager.conf
     - --kubeconfig=/etc/kubernetes/controller-manager.conf
     - --client-ca-file=/etc/kubernetes/pki/ca.crt
-    - --controllers=bootstrapsigner,csrapproving,csrsigning,daemonset,deployment,disruption,endpoint,job,namespace,nodeipam,nodelifecycle,podgc,replicaset,tokencleaner
+    - --service-account-private-key-file=/etc/kubernetes/pki/sa.key
+    - --use-service-account-credentials=true
+    - --controllers=bootstrapsigner,csrapproving,csrsigning,daemonset,deployment,disruption,endpoint,job,namespace,nodeipam,nodelifecycle,podgc,replicaset,tokencleaner,serviceaccount,serviceaccount-token
     name: kube-controller-manager
     volumeMounts:
     - mountPath: /etc/kubernetes/pki

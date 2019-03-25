@@ -1,6 +1,9 @@
 ignored:
 - CentOS
+- DNS
+- GPU
 - RHEL
+- RSA
 - TAs
 - api
 - config
