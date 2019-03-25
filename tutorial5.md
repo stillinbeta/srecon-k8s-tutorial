@@ -1,7 +1,7 @@
 # Tutorial 5 (controller-manager)
 
 [`kube-controller-manager`][cm] is responsible for synchronizing state between api server and the real world.
-The API server is responsible for recording the desired state of the cluster, then the controller manager is responsible for actualizing it.
+The API server is responsible for recording the desired state of the cluster, then the controller manager is responsible for realizing it.
 
 As the name suggests, the controller manager is not just one application.
 Rather, it's a single binary with a number of different components built into it.
@@ -51,7 +51,9 @@ We can't go through all of these, so we'll just concentrate on a few.
 ## Credentials
 
 `kube-controller-manager` accesses the API server.
-Like all other clients, we'll generate a `kubeconfig` so the controller-manager can access the API server.
+Like [all other API clients][apiauth], we'll generate a `kubeconfig` so the controller-manager can access the API server.
+
+[apiauth]: tutorial4.md#connecting-to-the-api-server
 
 ```yaml
 $ sudo kubeadm init phase kubeconfig controller-manager
@@ -63,7 +65,7 @@ This will be written to `/etc/kubernetes/controller-manager.conf`
 ## The `kube-controller-manager` pod
 
 Just like before, we'll start out with a pod skeleton.
-The kubeadm command to generate a fully-generated manifest is `sudo kubeadm init phase control-plane controller-manager`.
+The kubeadm command to generate a fully-generated manifest is `sudo kubeadm init phase control-plane controller-manager`, but we'll be creating this file from scratch.
 
 ```yaml
 apiVersion: v1
