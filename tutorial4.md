@@ -1,11 +1,11 @@
 # Tutorial 4: Getting the API server running
 
-The API server is the brain of kubernetes.
+The API server is the brain of Kubernetes.
 It's the only component that communicates directly with `etcd`,
-and usually the only publicly exposed port.
-All kubernetes clients interact pretty much exclusively with the API server, including proxy ports with `kubectl port-forward` and running tasks with `kubectl exec`.
+and usually the only publicly accessible control-plane component.
+All Kubernetes clients interact pretty much exclusively with the API server, including proxy ports with `kubectl port-forward` and running tasks with `kubectl exec`.
 
-By the end of this tutorial, your api server will be stood up and this server is going to look a lot more like a Kubernetes master node.
+By the end of this tutorial, your API server will be stood up and this server is going to look a lot more like a Kubernetes master node.
 
 ## Certificates
 
@@ -54,13 +54,23 @@ _NOTE: the IP addresses and names depend on your environment and hostname._
 
 ### API Server etcd client
 
-API Server to to talk to etcd as well, so we'll generate credentials that are valid with etcd.
+API Server needs to talk to etcd as well, so we'll generate credentials that are valid with etcd.
 
 ```console
 $ sudo kubeadm init phase certs apiserver-etcd-client
 [certs] Generating "apiserver-etcd-client" certificate and key
 $ openssl verify -CAfile /etc/kubernetes/pki/etcd/ca.crt /etc/kubernetes/pki/apiserver-etcd-client.crt
 /etc/kubernetes/pki/apiserver-etcd-client.crt: OK
+```
+
+Note that these credentials are issues by the `etcd` Certificate Authority, not APIServer's:
+
+````console
+$ openssl verify -CAfile /etc/kubernetes/pki/ca.crt /etc/kubernetes/pki/apis
+erver-etcd-client.crt
+O = system:masters, CN = kube-apiserver-etcd-client
+error 20 at 0 depth lookup: unable to get local issuer certificate
+error /etc/kubernetes/pki/apiserver-etcd-client.crt: verification failed
 ```
 
 ## YAML manifest
@@ -233,7 +243,7 @@ And disable http:
 
 #### Authentication
 
-We are going to be client certificate authentication.
+We are going to be using client certificate authentication.
 To enable this, we need to pass in the CA to validate certificates against:
 
 ```yaml
@@ -341,7 +351,7 @@ The standard way of connecting to a Kubernetes cluster is a YAML file called a `
 This file contains any number of credentials (which can be passwords, client certificates, or cloud provider tokens),
 as well as an address to connect to.
 
-In our case, it'll be a local IP addresses and credentials signed by by the apiserver certificate authority.
+In our case, it'll be a local IP addresses and credentials signed by by the API server certificate authority.
 
 We can get kubeadm to generate this:
 
@@ -362,7 +372,7 @@ sudo chown $(whoami) ~/.kube/config
 ### `kubectl`
 
 If you haven't already, you should install [`kubectl`][kubectl].
-`kubectl` is utility used to access, configure, and administer kubernetes clusters.
+`kubectl` is utility used to access, configure, and administer Kubernetes clusters.
 
 [kubectl]: https://kubernetes.io/docs/reference/kubectl/overview/
 
@@ -372,7 +382,7 @@ You should be able to install it using `apt`:
 sudo apt install kubectl
 ```
 
-And now you should be able to query the api server:
+And now you should be able to query the API server:
 
 ```console
 $ kubectl get cm --all-namespaces
@@ -382,7 +392,7 @@ kube-system   extension-apiserver-authentication   1      16m
 
 ## Reconnect kubelet
 
-Right now, the `kubelet` isn't connected to the apiserver, so we won't be able to run any pods.
+Right now, the `kubelet` isn't connected to the API server, so we won't be able to run any pods.
 Let's fix that.
 
 ### Bootstrap credentials
@@ -408,6 +418,10 @@ sudo systemctl daemon-reload
 sudo systemctl restart kubelet
 ```
 
+If you're curious, you can look at the contents of `/etc/kubernetes/kubelet.conf` now that it's created.
+The referenced `bootstrap-kubelet.conf` is only necessary if the `kubelet.conf` is not already provided.
+That's what we would use if we were making a worker node instead of a master node.
+
 If all's well, you should now be able to see the pods the kubelet is running for you:
 
 ```shell
@@ -420,5 +434,5 @@ kube-apiserver-k8s-tutorial   1/1     Running   0          2m10s
 ## Conclusion
 
 Your API server is now running!
-You're most of the way to a working kubernetes cluster.
-Next, we'll set up a few more services that kubernetes requires to function properly.
+You're most of the way to a working Kubernetes cluster.
+Next, we'll set up a few more services that Kubernetes requires to function properly.
