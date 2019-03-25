@@ -1,4 +1,7 @@
 ignored:
+- CentOS
+- RHEL
+- TAs
 - api
 - config
 - etcd
@@ -7,6 +10,7 @@ ignored:
 - hostname
 - http
 - https
+- hypervisor
 - ip
 - kubeadm
 - kubeconfig
