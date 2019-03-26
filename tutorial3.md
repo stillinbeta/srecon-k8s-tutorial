@@ -390,7 +390,7 @@ Awesome, it's running!
 If it's not running - you may have disabled `kubelet` earlier.
 
 ```console
-$ sudo systemctl start kubelet
+sudo systemctl start kubelet
 ```
 
 ## Health Check
