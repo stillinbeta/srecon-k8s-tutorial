@@ -131,6 +131,12 @@ Error: `[ERROR Port-10250]: Port 10250 is in use`
 
 Fix: This port is in use by the kubelet. You can safely ignore it, or temporarily stop the service to mollify the preflight check: `sudo systemctl stop kubelet`
 
+### `IsDockerSystemdCheck`
+
+Error: `[IsDockerSystemdCheck]: detected "cgroupfs" as the Docker cgroup driver. The recommended driver is "systemd". Please follow the guide at https://kubernetes.io/docs/setup/cri/`
+
+Fix: This is expected, and Ok to leave as-is.
+
 ### Ignoring Errors
 
 You can choose to ignore any of these errors with `--ignore-preflight-errors=<something`, where something is an identifier like `NumCPU` or `SystemVerification`.
