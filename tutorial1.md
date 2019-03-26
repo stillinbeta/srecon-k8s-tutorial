@@ -242,6 +242,7 @@ staticPodPath: /etc/kubernetes/manifests/
 ```
 
 And restart the process:
+
 ```shell
 sudo systemctl daemon-reload
 ```
