@@ -1,6 +1,6 @@
 # SRECon 2019 Kubernetes Tutorial
 
-This is a tutorial that will be given for SRECon 2019 NYC attendees.
+This is a tutorial that was given for SRECon 2019 NYC attendees.
 You [can find the slides here](Kubernetes%20from%20a%20Cake%20Mix.pdf).
 
 ## [Tutorial 0: Setup](tutorial0.md)
