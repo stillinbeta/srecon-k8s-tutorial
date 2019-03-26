@@ -69,7 +69,8 @@ We could just use the static pod manifest that kubeadm provides.
 If you run `sudo kubeadm init phase etcd local`, you'll get a manifest generated.
 
 But to learn how etcd works, we should make our own.
-This will go where our previous pod did, in `/etc/kubernetes/manifests`.
+This will go where our previous pod did, in `/etc/kubernetes/manifests` as
+the file `etcd.yaml`.
 
 ```yaml
 apiVersion: v1
