@@ -343,7 +343,7 @@ metadata:
   namespace: kube-system
 spec:
   containers:
-  - image: k8s.gcr.io/etcd:3.2.24
+    image: k8s.gcr.io/etcd:3.2.24
     name: etcd
     command:
     - etcd
