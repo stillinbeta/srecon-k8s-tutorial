@@ -88,8 +88,7 @@ $ openssl verify -CAfile /etc/kubernetes/pki/etcd/ca.crt /etc/kubernetes/pki/api
 Note that these credentials are issues by the `etcd` Certificate Authority, not APIServer's:
 
 ```console
-$ openssl verify -CAfile /etc/kubernetes/pki/ca.crt /etc/kubernetes/pki/apis
-erver-etcd-client.crt
+$ openssl verify -CAfile /etc/kubernetes/pki/ca.crt /etc/kubernetes/pki/apiserver-etcd-client.crt
 O = system:masters, CN = kube-apiserver-etcd-client
 error 20 at 0 depth lookup: unable to get local issuer certificate
 error /etc/kubernetes/pki/apiserver-etcd-client.crt: verification failed
