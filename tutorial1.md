@@ -243,6 +243,10 @@ staticPodPath: /etc/kubernetes/manifests/
 
 And restart the process:
 
+```shell
+sudo systemctl daemon-reload
+```
+
 A container isn't enough to run this, so we'll need a pod spec as well.
 The `pod` is something you may find yourself writing, and there's even an [API page][podapi]!
 
@@ -345,7 +349,7 @@ $
 And you should be able to curl our endpoint!
 
 ```console
-$ curl -i http://172.17.0.2:8080/endpoint0
+$ curl -i http://<your ip address>:8080/endpoint0
 HTTP/1.1 200 OK
 Date: Sat, 23 Mar 2019 03:32:56 GMT
 Content-Length: 72
