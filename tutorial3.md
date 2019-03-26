@@ -388,6 +388,7 @@ c7aa8e7018d_0
 Awesome, it's running!
 
 If it's not running - you may have disabled `kubelet` earlier.
+
 ```console
 $ sudo systemctl start kubelet
 ```
