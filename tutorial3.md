@@ -373,7 +373,7 @@ spec:
 ```
 
 Now let's write it out and have `kubelet pick it up`.
-Save the above yaml in `/etc/kubernetes/pods` just like our example pod.
+Save the above yaml in `/etc/kubernetes/manifests` just like our example pod.
 
 And now it should be running! Let's see:
 
