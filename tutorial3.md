@@ -387,6 +387,12 @@ c7aa8e7018d_0
 
 Awesome, it's running!
 
+If it's not running - you may have disabled `kubelet` earlier.
+
+```console
+sudo systemctl start kubelet
+```
+
 ## Health Check
 
 We can check if our etcd is healthy in the same way an external health checker would.
