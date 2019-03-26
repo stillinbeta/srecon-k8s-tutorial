@@ -17,6 +17,7 @@ _NOTE: This is `xenial` regardless of the version of Ubuntu you are using. I am 
 For historical reasons, the docker package is `docker.io`.
 
 ```shell
+sudo apt update
 sudo apt install docker.io
 ```
 
