@@ -130,7 +130,7 @@ Mar 23 01:47:27 k8s-tutorial systemd[1]: kubelet.service: Main process exited, c
 Mar 23 01:47:27 k8s-tutorial systemd[1]: kubelet.service: Failed with result 'exit-code'.
 ```
 
-Great, a new error message! let's tackle this one.
+Great, a new error message! let's tackle this one. If you are not seeing the error message, try restarting kubelet using `sudo systemctl restart kubelet`.
 Looking at the [kubelet docs][kubelet], we can see that `--bootstrap-kubeconfig` is used for a kubeconfig we'll use to retrieve our real kubeconfig.
 Since we don't have a kubelet yet, we can just comment this out.
 
