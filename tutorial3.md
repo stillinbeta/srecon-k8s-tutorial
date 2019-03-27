@@ -83,9 +83,9 @@ metadata:
   namespace: kube-system
 spec:
   containers:
+  - name: etcd
     image: k8s.gcr.io/etcd:3.2.24
     imagePullPolicy: IfNotPresent
-    name: etcd
 ```
 
 This should look a little familiar: we've written a pod manifest before.
@@ -119,8 +119,8 @@ metadata:
   namespace: kube-system
 spec:
   containers:
+  - name: etcd
     image: k8s.gcr.io/etcd:3.2.24
-    name: etcd
   hostNetwork: true
 ```
 
@@ -152,14 +152,14 @@ metadata:
   namespace: kube-system
 spec:
   containers:
+  - name: etcd
     image: k8s.gcr.io/etcd:3.2.24
-    name: etcd
   hostNetwork: true
   volumes:
-  - hostPath:
+  - name: etcd-data
+    hostPath:
       path: /var/lib/etcd
       type: DirectoryOrCreate
-    name: etcd-data
 ```
 
 [`DirectoryOrCreate`][hostPath] does exactly what it sounds like.
@@ -184,18 +184,18 @@ metadata:
   namespace: kube-system
 spec:
   containers:
+  - name: etcd
     image: k8s.gcr.io/etcd:3.2.24
-    name: etcd
   hostNetwork: true
   volumes:
-  - hostPath:
+  - name: etcd-data
+    hostPath:
       path: /var/lib/etcd
       type: DirectoryOrCreate
-    name: etcd-data
-  - hostPath:
+  - name: etcd-certs
+    hostPath:
       path: /etc/kubernetes/pki/etcd
       type: Directory
-    name: etcd-certs
 ```
 
 ### Mounting the volumes
@@ -213,23 +213,23 @@ metadata:
   namespace: kube-system
 spec:
   containers:
+  - name: etcd
     image: k8s.gcr.io/etcd:3.2.24
-    name: etcd
     volumeMounts:
-    - mountPath: /var/lib/etcd
-      name: etcd-data
-    - mountPath: /etc/kubernetes/pki/etcd
-      name: etcd-certs
+    - name: etcd-data
+      mountPath: /var/lib/etcd
+    - name: etcd-certs
+      mountPath: /etc/kubernetes/pki/etcd
   hostNetwork: true
   volumes:
-  - hostPath:
+  - name: etcd-data
+    hostPath:
       path: /var/lib/etcd
       type: DirectoryOrCreate
-    name: etcd-data
-  - hostPath:
+  - name: etcd-certs
+    hostPath:
       path: /etc/kubernetes/pki/etcd
       type: Directory
-    name: etcd-certs
 ```
 
 ## etcd Arguments
@@ -344,8 +344,8 @@ metadata:
   namespace: kube-system
 spec:
   containers:
+  - name: etcd
     image: k8s.gcr.io/etcd:3.2.24
-    name: etcd
     command:
     - etcd
     - --name=k8s-demo
@@ -357,20 +357,20 @@ spec:
     - --advertise-client-urls=https://localhost:2379
     - --data-dir=/var/lib/etcd
     volumeMounts:
-    - mountPath: /var/lib/etcd
-      name: etcd-data
-    - mountPath: /etc/kubernetes/pki/etcd
-      name: etcd-certs
+    - name: etcd-data
+      mountPath: /var/lib/etcd
+    - name: etcd-certs
+      mountPath: /etc/kubernetes/pki/etcd
   hostNetwork: true
   volumes:
-  - hostPath:
+  - name: etcd-data
+    hostPath:
       path: /var/lib/etcd
       type: DirectoryOrCreate
-    name: etcd-data
-  - hostPath:
+  - name: etcd-certs
+    hostPath:
       path: /etc/kubernetes/pki/etcd
       type: Directory
-    name: etcd-certs
 ```
 
 Now let's write it out and have `kubelet pick it up`.
