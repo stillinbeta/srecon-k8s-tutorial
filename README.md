@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/stillinbeta/srecon-k8s-tutorial.svg?branch=master)](https://travis-ci.org/stillinbeta/srecon-k8s-tutorial)
+<a href='http://www.recurse.com' title='Made with love at the Recurse Center'><img src='https://cloud.githubusercontent.com/assets/2883345/11325206/336ea5f4-9150-11e5-9e90-d86ad31993d8.png' height='20px'/></a>
+
 # SRECon 2019 Kubernetes Tutorial
 
 This is a tutorial that was given for SRECon 2019 NYC attendees.
